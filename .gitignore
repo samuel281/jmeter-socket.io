@@ -1,7 +1,11 @@
+.classpath
 .idea
+.project
+.settings
 node_modules
 target
 *.iml
 *.class
 *.log
 *-log
+target

@@ -1,14 +1,10 @@
-package net.unit8.jmeter.protocol.websocket.control.gui;
+package net.unit8.jmeter.protocol.socket_io.control.gui;
 
-import net.unit8.jmeter.protocol.websocket.sampler.WebSocketSampler;
-import org.apache.jmeter.config.Arguments;
+import net.unit8.jmeter.protocol.socket_io.sampler.SocketIOSampler;
 import org.apache.jmeter.gui.util.HorizontalPanel;
 import org.apache.jmeter.gui.util.VerticalPanel;
-import org.apache.jmeter.protocol.http.gui.HTTPArgumentsPanel;
-import org.apache.jmeter.protocol.http.util.HTTPArgument;
 import org.apache.jmeter.samplers.gui.AbstractSamplerGui;
 import org.apache.jmeter.testelement.TestElement;
-import org.apache.jmeter.testelement.property.TestElementProperty;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
@@ -20,69 +16,69 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * GUI for WebSocetSampler
+ * GUI for SocketIOSampler
  *
- * @author kawasima
+ * @author jiaxiluo
  */
-public class WebSocketSamplerGui extends AbstractSamplerGui {
+public class SocketIOSamplerGui extends AbstractSamplerGui {
+
+    private static final long serialVersionUID = 1L;
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private JTextField domain;
     private JTextField port;
     private JTextField protocol;
-    private JTextField contentEncoding;
     private JTextField path;
+    private JTextField connectTimeout;
+    private JTextField ackTimeout;
+    private JTextField sendEvent;
     private JTextArea  sendMessage;
-    private JTextArea  recvMessage;
-    private HTTPArgumentsPanel argsPanel;
+    private JTextArea  ackMessage;
 
     private boolean displayName = true;
     private static final ResourceBundle resources;
 
     static {
         Locale loc = JMeterUtils.getLocale();
-        resources = ResourceBundle.getBundle(WebSocketSampler.class.getName() + "Resources", loc);
-        log.info("Resource " + WebSocketSampler.class.getName() +  //$NON-NLS-1$
-                " is loaded for locale " + loc); //$NON-NLS-1$
+        resources = ResourceBundle.getBundle(SocketIOSampler.class.getName() + "Resources", loc);
+        log.info("Resource " + SocketIOSampler.class.getName() +
+                " is loaded for locale " + loc);
     }
 
-    public WebSocketSamplerGui() {
+    public SocketIOSamplerGui() {
         this(true);
     }
 
-    public WebSocketSamplerGui(boolean displayName) {
+    public SocketIOSamplerGui(boolean displayName) {
         this.displayName = displayName;
         init();
     }
 
-    @Override
     public String getLabelResource() {
-        throw new IllegalStateException("This shouldn't be called"); //$NON-NLS-1$
+        throw new IllegalStateException("This shouldn't be called");
     }
 
     @Override
     public String getStaticLabel() {
-        return getResString("websocket_testing_title");  //$NON-NLS-1$
+        return getResString("socket_io_testing_title");
     }
+
     @Override
     public void configure(TestElement element) {
         super.configure(element);
-        domain.setText(element.getPropertyAsString(WebSocketSampler.DOMAIN));
-        port.setText(element.getPropertyAsString(WebSocketSampler.PORT));
-        protocol.setText(element.getPropertyAsString(WebSocketSampler.PROTOCOL));
-        path.setText(element.getPropertyAsString(WebSocketSampler.PATH));
-        contentEncoding.setText(element.getPropertyAsString(WebSocketSampler.CONTENT_ENCODING));
-
-        Arguments arguments = (Arguments) element.getProperty(WebSocketSampler.ARGUMENTS).getObjectValue();
-        argsPanel.configure(arguments);
-
-        sendMessage.setText(element.getPropertyAsString(WebSocketSampler.SEND_MESSAGE));
-        recvMessage.setText(element.getPropertyAsString(WebSocketSampler.RECV_MESSAGE));
+        domain.setText(element.getPropertyAsString(SocketIOSampler.DOMAIN));
+        port.setText(element.getPropertyAsString(SocketIOSampler.PORT));
+        protocol.setText(element.getPropertyAsString(SocketIOSampler.PROTOCOL));
+        path.setText(element.getPropertyAsString(SocketIOSampler.PATH));
+        connectTimeout.setText(element.getPropertyAsString(SocketIOSampler.CONNECT_TIMEOUT));
+        ackTimeout.setText(element.getPropertyAsString(SocketIOSampler.ACK_TIMEOUT));
+        sendEvent.setText(element.getPropertyAsString(SocketIOSampler.SEND_EVENT));
+        sendMessage.setText(element.getPropertyAsString(SocketIOSampler.SEND_MESSAGE));
+        ackMessage.setText(element.getPropertyAsString(SocketIOSampler.ACK_MESSAGE));
     }
 
-    @Override
     public TestElement createTestElement() {
-        WebSocketSampler element = new WebSocketSampler();
+        SocketIOSampler element = new SocketIOSampler();
 
         element.setName(getName());
         element.setProperty(TestElement.GUI_CLASS, this.getClass().getName());
@@ -92,27 +88,23 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
         return element;
     }
 
-    @Override
     public void modifyTestElement(TestElement element) {
         configureTestElement(element);
-        element.setProperty(WebSocketSampler.DOMAIN, domain.getText());
-        element.setProperty(WebSocketSampler.PATH, path.getText());
-        element.setProperty(WebSocketSampler.PORT, port.getText());
-        element.setProperty(WebSocketSampler.PROTOCOL, protocol.getText());
-        element.setProperty(WebSocketSampler.CONTENT_ENCODING, contentEncoding.getText());
-
-        Arguments args = (Arguments) argsPanel.createTestElement();
-        HTTPArgument.convertArgumentsToHTTP(args);
-        element.setProperty(new TestElementProperty(WebSocketSampler.ARGUMENTS, args));
-
-        element.setProperty(WebSocketSampler.SEND_MESSAGE, sendMessage.getText());
-        element.setProperty(WebSocketSampler.RECV_MESSAGE, recvMessage.getText());
+        element.setProperty(SocketIOSampler.DOMAIN, domain.getText());
+        element.setProperty(SocketIOSampler.PATH, path.getText());
+        element.setProperty(SocketIOSampler.PORT, port.getText());
+        element.setProperty(SocketIOSampler.PROTOCOL, protocol.getText());
+        element.setProperty(SocketIOSampler.CONNECT_TIMEOUT, connectTimeout.getText());
+        element.setProperty(SocketIOSampler.ACK_TIMEOUT, ackTimeout.getText());
+        element.setProperty(SocketIOSampler.SEND_EVENT, sendEvent.getText());
+        element.setProperty(SocketIOSampler.SEND_MESSAGE, sendMessage.getText());
+        element.setProperty(SocketIOSampler.ACK_MESSAGE, ackMessage.getText());
     }
 
     private JPanel getDomainPanel() {
         domain = new JTextField(20);
 
-        JLabel label = new JLabel(JMeterUtils.getResString("web_server_domain")); // $NON-NLS-1$
+        JLabel label = new JLabel(JMeterUtils.getResString("web_server_domain"));
         label.setLabelFor(domain);
 
         JPanel panel = new JPanel(new BorderLayout(5, 0));
@@ -124,7 +116,7 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
     private JPanel getPortPanel() {
         port = new JTextField(4);
 
-        JLabel label = new JLabel(JMeterUtils.getResString("web_server_port")); // $NON-NLS-1$
+        JLabel label = new JLabel(JMeterUtils.getResString("web_server_port"));
         label.setLabelFor(port);
 
         JPanel panel = new JPanel(new BorderLayout(5, 0));
@@ -137,18 +129,13 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
     protected Component getProtocolAndPathPanel() {
         // PATH
         path = new JTextField(15);
-        JLabel pathLabel = new JLabel(JMeterUtils.getResString("path")); //$NON-NLS-1$
+        JLabel pathLabel = new JLabel(JMeterUtils.getResString("path"));
         pathLabel.setLabelFor(path);
 
         // PROTOCOL
         protocol = new JTextField(4);
-        JLabel protocolLabel = new JLabel(JMeterUtils.getResString("protocol")); // $NON-NLS-1$
+        JLabel protocolLabel = new JLabel(JMeterUtils.getResString("protocol"));
         protocolLabel.setLabelFor(protocol);
-
-        // CONTENT_ENCODING
-        contentEncoding = new JTextField(10);
-        JLabel contentEncodingLabel = new JLabel(JMeterUtils.getResString("content_encoding")); // $NON-NLS-1$
-        contentEncodingLabel.setLabelFor(contentEncoding);
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(pathLabel);
@@ -159,15 +146,52 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
         panel.add(protocol);
         panel.add(Box.createHorizontalStrut(5));
 
-        panel.add(contentEncodingLabel);
-        panel.add(contentEncoding);
         panel.setMinimumSize(panel.getPreferredSize());
 
         return panel;
     }
+    
+    private JPanel getConnectTimeoutPanel() {
+        connectTimeout = new JTextField(10);
+
+        JLabel label = new JLabel(getResString("socket_io_connect_timeout"));
+        label.setLabelFor(connectTimeout);
+  
+        JPanel panel = new JPanel(new BorderLayout(5, 0));
+        panel.add(label, BorderLayout.WEST);
+        panel.add(connectTimeout, BorderLayout.CENTER);
+  
+        return panel;
+    }
+    
+    private JPanel getAckTimeoutPanel() {
+        ackTimeout = new JTextField(10);
+  
+        JLabel label = new JLabel(getResString("socket_io_ack_timeout"));
+        label.setLabelFor(ackTimeout);
+  
+        JPanel panel = new JPanel(new BorderLayout(5, 0));
+        panel.add(label, BorderLayout.WEST);
+        panel.add(ackTimeout, BorderLayout.CENTER);
+  
+        return panel;
+    }
+    
+    private JPanel getSendEventPanel() {
+        sendEvent = new JTextField(30);
+  
+        JLabel label = new JLabel(getResString("socket_io_send_event"));
+        label.setLabelFor(sendEvent);
+  
+        JPanel panel = new JPanel(new BorderLayout(5, 0));
+        panel.add(label, BorderLayout.WEST);
+        panel.add(sendEvent, BorderLayout.CENTER);
+  
+        return panel;
+  }
 
     private JPanel getSendMessagePanel() {
-        JLabel sendMessageLabel = new JLabel(getResString("websocket_send_message")); // $NON-NLS-1$
+        JLabel sendMessageLabel = new JLabel(getResString("socket_io_send_message"));
         sendMessage = new JTextArea(3, 0);
         sendMessage.setLineWrap(true);
         sendMessageLabel.setLabelFor(sendMessage);
@@ -178,16 +202,16 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
         return sendMessagePanel;
     }
 
-    private JPanel getRecvMessagePanel() {
-        JLabel recvMessageLabel = new JLabel(getResString("websocket_recv_message")); // $NON-NLS-1$
-        recvMessage = new JTextArea(3, 0);
-        recvMessage.setLineWrap(true);
-        recvMessageLabel.setLabelFor(recvMessage);
+    private JPanel getAckMessagePanel() {
+        JLabel ackMessageLabel = new JLabel(getResString("socket_io_ack_message"));
+        ackMessage = new JTextArea(3, 0);
+        ackMessage.setLineWrap(true);
+        ackMessageLabel.setLabelFor(ackMessage);
 
-        JPanel recvMessagePanel = new JPanel(new BorderLayout(5, 0));
-        recvMessagePanel.add(recvMessageLabel, BorderLayout.WEST);
-        recvMessagePanel.add(recvMessage, BorderLayout.CENTER);
-        return recvMessagePanel;
+        JPanel ackMessagePanel = new JPanel(new BorderLayout(5, 0));
+        ackMessagePanel.add(ackMessageLabel, BorderLayout.WEST);
+        ackMessagePanel.add(ackMessage, BorderLayout.CENTER);
+        return ackMessagePanel;
     }
 
     private void init() {
@@ -205,19 +229,23 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
         serverPanel.setLayout(new BoxLayout(serverPanel, BoxLayout.X_AXIS));
         serverPanel.add(getDomainPanel());
         serverPanel.add(getPortPanel());
-
         webRequestPanel.add(serverPanel, BorderLayout.NORTH);
+
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
         northPanel.add(getProtocolAndPathPanel());
+        northPanel.add(getConnectTimeoutPanel());
+        webRequestPanel.add(northPanel, BorderLayout.SOUTH);
 
-        webRequestPanel.add(northPanel, BorderLayout.CENTER);
-        argsPanel = new HTTPArgumentsPanel();
-        webRequestPanel.add(argsPanel, BorderLayout.SOUTH);
+        JPanel southPanel = new JPanel();
+        southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
+        southPanel.add(getSendEventPanel());
+        southPanel.add(getAckTimeoutPanel());
 
         mainPanel.add(webRequestPanel);
+        mainPanel.add(southPanel);
         mainPanel.add(getSendMessagePanel());
-        mainPanel.add(getRecvMessagePanel());
+        mainPanel.add(getAckMessagePanel());
         add(mainPanel, BorderLayout.CENTER);
     }
 
@@ -232,10 +260,10 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
      *         "[res_key="+key+"]"
      */
     public static String getResString(String key) {
-        return getResStringDefault(key, RES_KEY_PFX + key + "]"); //$NON-NLS-1$
+        return getResStringDefault(key, RES_KEY_PFX + key + "]");
     }
 
-    public static final String RES_KEY_PFX = "[res_key="; //$NON-NLS-1$
+    public static final String RES_KEY_PFX = "[res_key=";
 
     /*
      * Helper method to do the actual work of fetching resources; allows
@@ -246,14 +274,14 @@ public class WebSocketSamplerGui extends AbstractSamplerGui {
             return null;
         }
         // Resource keys cannot contain spaces
-        key = key.replace(' ', '_'); // $NON-NLS-1$ // $NON-NLS-2$
+        key = key.replace(' ', '_');
         key = key.toLowerCase(java.util.Locale.ENGLISH);
         String resString = null;
         try {
             resString = resources.getString(key);
         } catch (MissingResourceException mre) {
-            log.warn("ERROR! Resource string not found: [" +  //$NON-NLS-1$
-                    key + "]", mre); //$NON-NLS-1$
+            log.warn("ERROR! Resource string not found: [" +
+                    key + "]", mre);
             resString = defaultValue;
         }
         return resString;

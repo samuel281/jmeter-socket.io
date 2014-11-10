@@ -1,6 +1,7 @@
 package net.unit8.jmeter.protocol.websocket.sampler;
 
-import net.unit8.jmeter.protocol.websocket.sampler.WebSocketSampler;
+import net.unit8.jmeter.protocol.websocket.sampler.SocketIOSampler;
+
 import org.apache.jmeter.config.Arguments;
 import org.apache.jmeter.config.CSVDataSet;
 import org.apache.jmeter.control.LoopController;
@@ -26,8 +27,10 @@ import org.apache.jorphan.collections.ListedHashTree;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.jorphan.util.HeapDumper;
 import org.apache.log.Logger;
+import org.junit.Test;
 
 import javax.xml.transform.Result;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -49,8 +52,7 @@ public class WebSocketSamplerTest {
         JMeterUtils.setJMeterHome("src/test/resources/");
         JMeterUtils.loadJMeterProperties("src/test/resources/jmeter.properties");
         JMeterUtils.setProperty("saveservice_properties", "saveservice.properties");
-        JMeterUtils.setProperty("search_paths", "ApacheJMeter_functions-2.9.jar");
-        JMeterUtils.setLocale(Locale.JAPAN);
+        JMeterUtils.setProperty("search_paths", "ApacheJMeter_functions-2.11.jar");
         
         JMeterEngine engine = new StandardJMeterEngine();
         HashTree config = new ListedHashTree();
@@ -85,7 +87,7 @@ public class WebSocketSamplerTest {
         csvDataSet.setProperty("recycle", true);
         csvDataSet.setProperty("stopThread", false);
 
-        WebSocketSampler sampler = new WebSocketSampler();
+        SocketIOSampler sampler = new SocketIOSampler();
         sampler.setName("WebSocket Test");
         sampler.setProperty(new BooleanProperty(TestElement.ENABLED, true));
         sampler.addNonEncodedArgument("name", "${USER_NAME}", "=");
