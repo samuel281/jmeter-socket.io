@@ -1,5 +1,8 @@
 package net.unit8.jmeter.protocol.socket_io.sampler;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import org.apache.jmeter.config.ConfigTestElement;
 import org.apache.jmeter.protocol.http.util.HTTPConstants;
 import org.apache.jmeter.samplers.AbstractSampler;
@@ -14,13 +17,6 @@ import org.apache.jorphan.util.JOrphanUtils;
 import org.apache.log.Logger;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonSyntaxException;
-
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,10 +46,9 @@ public class SocketIOSampler extends AbstractSampler implements TestStateListene
     private static final String UNSPECIFIED_PORT_AS_STRING = "0";
     private static final int URL_UNSPECIFIED_PORT = -1;
 
-    private SocketIO socket = null;
-    private IOAcknowledge ack = null;
-    private static final ConcurrentHashSet<SocketIO> samplerConnections
-            = new ConcurrentHashSet<SocketIO>();
+    private Socket socket = null;
+    private static final ConcurrentHashSet<Socket> samplerConnections
+            = new ConcurrentHashSet<Socket>();
 
     private boolean initialized = false;
     private String responseMessage;
@@ -61,6 +56,7 @@ public class SocketIOSampler extends AbstractSampler implements TestStateListene
     public static final String DOMAIN = "SocketIOSampler.domain";
     public static final String PORT = "SocketIOSampler.port";
     public static final String PATH = "SocketIOSampler.path";
+    public static final String ROOM = "SocketIOSampler.room";
     public static final String PROTOCOL = "SocketIOSampler.protocol";
     public static final String CONNECT_TIMEOUT = "SocketIOSampler.connectTimeout";
     public static final String SEND_EVENT = "SocketIOSampler.sendEvent";
@@ -75,61 +71,49 @@ public class SocketIOSampler extends AbstractSampler implements TestStateListene
         final String threadName = JMeterContextService.getContext().getThread().getThreadName();
         final Pattern regex = (getAckMessage() != null) ? Pattern.compile(getAckMessage()) : null;
 
+        log.info("initializing....");
         if (!initialized) {
             URI uri = getUri();
-            socket = new SocketIO(uri.toURL());
+            IO.Options opts = new IO.Options();
+            opts.forceNew = true;
 
-            socket.connect(new IOCallback() {
-                public void onMessage(JsonElement json, IOAcknowledge ack) {
-                    try {
-                        onMessage(json.toString(), ack);
-                    } catch (JsonSyntaxException e) {
-                        e.printStackTrace();
+            socket = IO.socket(uri.toString(), opts);
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener(){
+                public void call(Object... objects) {
+                    String room = getPropertyAsString(ROOM);
+                    socket.emit("join", room);
+
+                    synchronized (parent) {
+                        initialized = true;
+                        parent.notify();
                     }
                 }
-
-                public void onMessage(String data, IOAcknowledge ack) {
-                    log.info("Connect " + threadName);
+            }).on(Socket.EVENT_ERROR, new Emitter.Listener() {
+                public void call(Object... objects) {
+                    log.error("an Error occured " + threadName);
+                    log.error(objects[0].toString());
                 }
-
-                public void onError(SocketIOException socketIOException) {
-                    log.info("an Error occured" + threadName);
-                    socketIOException.printStackTrace();
-                }
-
-                public void onDisconnect() {
+            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+                public void call(Object... objects) {
                     log.info("Disconnect " + threadName);
                     synchronized (parent) {
                         initialized = false;
                         parent.notify();
                     }
                 }
-
-                public void onConnect() {
-                    log.info("Connect " + threadName);
+            }).on(Socket.EVENT_MESSAGE, new Emitter.Listener() {
+                public void call(Object... objects) {
+                    log.info("Message received " + objects[0].toString() + " " + threadName);
                     synchronized (parent) {
-                        initialized = true;
-                        parent.notify();
-                    }
-                }
-
-                public void on(String event, IOAcknowledge ack, JsonElement... args) {
-                    log.info("Server triggered event '" + event + "'");
-                }
-            });
-
-            ack = new IOAcknowledge() {
-                public void ack(JsonElement... args) {
-                    String data = args.toString();
-                    synchronized (parent) {
-                        if (regex == null || regex.matcher(data).find()) {
-                            responseMessage = data;
+                        if (regex == null || regex.matcher(objects[0].toString()).find()) {
+                            responseMessage = objects[0].toString();
                             parent.notify();
                         }
                     }
                 }
-            };
+            });
 
+            socket.connect();
             synchronized (parent) {
                 if (initialized == false)
                     wait(getConnectTimeout());
@@ -157,9 +141,13 @@ public class SocketIOSampler extends AbstractSampler implements TestStateListene
         res.setSamplerData(message);
         res.sampleStart();
         try {
-            if (socket.isConnected()) {
-                socket.emit(event, ack, message);
-                log.info("Send " + event + " event.");
+            if (socket.connected()) {
+                if (event != null && message != null) {
+                    socket.emit(event, message);
+                    log.info("Send " + event + " event.");
+                }
+
+                log.info("Waiting for the message.");
             } else {
                 initialize();
             }
@@ -363,8 +351,12 @@ public class SocketIOSampler extends AbstractSampler implements TestStateListene
 
     public void testEnded(String host) {
         try {
-            for(SocketIO socket : samplerConnections) {
+            for(Socket socket : samplerConnections) {
                 socket.disconnect();
+                socket.off(Socket.EVENT_CONNECT);
+                socket.off(Socket.EVENT_DISCONNECT);
+                socket.off(Socket.EVENT_MESSAGE);
+                socket.off(Socket.EVENT_ERROR);
             }
         } catch (Exception e) {
             log.error("sampler error when close.", e);

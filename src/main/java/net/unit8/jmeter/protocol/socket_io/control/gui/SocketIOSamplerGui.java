@@ -29,6 +29,7 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
     private JTextField port;
     private JTextField protocol;
     private JTextField path;
+    private JTextField room;
     private JTextField connectTimeout;
     private JTextField ackTimeout;
     private JTextField sendEvent;
@@ -70,6 +71,7 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
         port.setText(element.getPropertyAsString(SocketIOSampler.PORT));
         protocol.setText(element.getPropertyAsString(SocketIOSampler.PROTOCOL));
         path.setText(element.getPropertyAsString(SocketIOSampler.PATH));
+        room.setText(element.getPropertyAsString(SocketIOSampler.ROOM));
         connectTimeout.setText(element.getPropertyAsString(SocketIOSampler.CONNECT_TIMEOUT));
         ackTimeout.setText(element.getPropertyAsString(SocketIOSampler.ACK_TIMEOUT));
         sendEvent.setText(element.getPropertyAsString(SocketIOSampler.SEND_EVENT));
@@ -92,6 +94,7 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
         configureTestElement(element);
         element.setProperty(SocketIOSampler.DOMAIN, domain.getText());
         element.setProperty(SocketIOSampler.PATH, path.getText());
+        element.setProperty(SocketIOSampler.ROOM, room.getText());
         element.setProperty(SocketIOSampler.PORT, port.getText());
         element.setProperty(SocketIOSampler.PROTOCOL, protocol.getText());
         element.setProperty(SocketIOSampler.CONNECT_TIMEOUT, connectTimeout.getText());
@@ -137,6 +140,7 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
         JLabel protocolLabel = new JLabel(JMeterUtils.getResString("protocol"));
         protocolLabel.setLabelFor(protocol);
 
+
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(pathLabel);
         panel.add(path);
@@ -179,16 +183,27 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
     
     private JPanel getSendEventPanel() {
         sendEvent = new JTextField(30);
-  
         JLabel label = new JLabel(getResString("socket_io_send_event"));
         label.setLabelFor(sendEvent);
-  
+
         JPanel panel = new JPanel(new BorderLayout(5, 0));
         panel.add(label, BorderLayout.WEST);
         panel.add(sendEvent, BorderLayout.CENTER);
   
         return panel;
   }
+
+    private JPanel getRoomPanel() {
+        room = new JTextField(30);
+        JLabel label = new JLabel(getResString("socket_io_room"));
+        label.setLabelFor(room);
+
+        JPanel panel = new JPanel(new BorderLayout(5, 0));
+        panel.add(label, BorderLayout.WEST);
+        panel.add(room, BorderLayout.CENTER);
+
+        return panel;
+    }
 
     private JPanel getSendMessagePanel() {
         JLabel sendMessageLabel = new JLabel(getResString("socket_io_send_message"));
@@ -239,6 +254,7 @@ public class SocketIOSamplerGui extends AbstractSamplerGui {
 
         JPanel southPanel = new JPanel();
         southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
+        southPanel.add(getRoomPanel());
         southPanel.add(getSendEventPanel());
         southPanel.add(getAckTimeoutPanel());
 

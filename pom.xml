@@ -11,7 +11,7 @@
 
     <properties>
         <jmeterVersion>2.11</jmeterVersion>
-        <jettyVersion>8.1.9.v20130131</jettyVersion>
+        <jettyVersion>9.1.1.v20140108</jettyVersion>
         <nettyVersion>1.6.5</nettyVersion>
     </properties>
 
@@ -73,13 +73,13 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-websocket</artifactId>
+            <artifactId>jetty-util</artifactId>
             <version>${jettyVersion}</version>
         </dependency>
         <dependency>
 		  	<groupId>io.socket</groupId>
 		  	<artifactId>socket.io-client</artifactId>
-		  	<version>0.2.1</version>
+		  	<version>0.6.2</version>
 		</dependency>
         <dependency>
             <groupId>junit</groupId>
